@@ -1,4 +1,7 @@
 package com.leejefon.Elevator;
 
-public class EnumElevatorControl {
+public enum ElevatorStatus {
+    ELEVATOR_GOING_UP,
+    ELEVATOR_GOING_DOWN,
+    ELEVATOR_OPEN
 }
