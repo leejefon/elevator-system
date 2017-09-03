@@ -1,9 +1,12 @@
 package com.leejefon.Elevator;
 
-public interface InterfaceElevatorControlSystem {
-    void requestUp(Integer currentFloor);
-    void requestDown(Integer currentFloor);
+import java.util.ArrayList;
 
-    Elevator getClosestElevator(Integer currentFloor, ElevatorStatus direction);
+public interface InterfaceElevatorControlSystem {
+    ArrayList<Elevator> getElevators();
+    void requestUp(int currentFloor);
+    void requestDown(int currentFloor);
+
+    Elevator getBestElevator(Integer currentFloor, ElevatorStatus direction);
     void step();
 }

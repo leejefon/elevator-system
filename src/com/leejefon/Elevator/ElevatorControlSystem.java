@@ -18,25 +18,93 @@ public class ElevatorControlSystem implements InterfaceElevatorControlSystem {
     }
 
     @Override
-    public void requestUp(Integer currentFloor) {
-        Elevator elevator = this.getClosestElevator(currentFloor, ElevatorStatus.ELEVATOR_GOING_UP);
+    public ArrayList<Elevator> getElevators() {
+        return this.elevators;
+    }
+
+    @Override
+    public void requestUp(int currentFloor) {
+        Elevator elevator = this.getBestElevator(currentFloor, ElevatorStatus.GOING_UP);
         elevator.addDestination(currentFloor);
     }
 
     @Override
-    public void requestDown(Integer currentFloor) {
-        Elevator elevator = this.getClosestElevator(currentFloor, ElevatorStatus.ELEVATOR_GOING_DOWN);
+    public void requestDown(int currentFloor) {
+        Elevator elevator = this.getBestElevator(currentFloor, ElevatorStatus.GOING_DOWN);
         elevator.addDestination(currentFloor);
     }
 
     @Override
-    public Elevator getClosestElevator(Integer currentFloor, ElevatorStatus direction) {
-        // TODO: calculate
-        return elevators.get(0);
+    public Elevator getBestElevator(Integer currentFloor, ElevatorStatus direction) {
+        ElevatorStatus oppositeDirection = direction == ElevatorStatus.GOING_UP ?
+                ElevatorStatus.GOING_DOWN : ElevatorStatus.GOING_UP;
+        Elevator bestElevator = null;
+        int smallestFloorDiff = numberOfFloors;
+
+        // TODO: need to handle empty status
+        for (Elevator elevator : elevators) {
+            int floorDiff = -1;
+            if (elevator.status() == direction) {
+                if (direction == ElevatorStatus.GOING_UP) {
+                    if (elevator.currentFloor() < currentFloor) {
+                        floorDiff = currentFloor - elevator.currentFloor();
+                    } else if (elevator.currentFloor() > currentFloor) {
+                        floorDiff = 2 * numberOfFloors - elevator.currentFloor() - currentFloor;
+                    } else {
+                        bestElevator = elevator;
+                        break;
+                    }
+                } else if (direction == ElevatorStatus.GOING_DOWN) {
+                    if (elevator.currentFloor() > currentFloor) {
+                        floorDiff = elevator.currentFloor() - currentFloor;
+                    } else if (elevator.currentFloor() < currentFloor) {
+                        floorDiff = elevator.currentFloor() + currentFloor;
+                    } else {
+                        bestElevator = elevator;
+                        break;
+                    }
+                }
+            } else if (elevator.status() == oppositeDirection){
+                if (direction == ElevatorStatus.GOING_UP) {
+                    floorDiff = elevator.currentFloor() + currentFloor;
+                } else {
+                    floorDiff = 2 * numberOfFloors - elevator.currentFloor() - currentFloor;
+                }
+            } else if (elevator.status() == ElevatorStatus.EMPTY) {
+                // Just do it for now
+                bestElevator = elevator;
+                break;
+            }
+
+            if (floorDiff < smallestFloorDiff) {
+                smallestFloorDiff = floorDiff;
+                bestElevator = elevator;
+            }
+        }
+
+        return bestElevator;
     }
 
     @Override
     public void step() {
-        // TODO: loop elevators
+        for (Elevator elevator : elevators) {
+            switch (elevator.status()) {
+                case GOING_UP:
+                    elevator.moveUp();
+                    break;
+                case GOING_DOWN:
+                    elevator.moveDown();
+                    break;
+                case OPEN:
+                    // NOTE: skip one round
+                    break;
+                case EMPTY:
+                    // NOTE: move down to 1st floor
+                    if (elevator.currentFloor() > 1) {
+                        elevator.moveDown();
+                    }
+                    break;
+            }
+        }
     }
 }
